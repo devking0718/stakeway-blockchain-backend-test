@@ -1,8 +1,11 @@
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from typing import List
 import asyncio
 from contextlib import asynccontextmanager
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import time
 
 from .database import get_db, init_db
 from .models import ValidatorRequest, ValidatorKey, RequestStatus
@@ -19,6 +22,19 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Define Prometheus metrics
+REQUEST_COUNT = Counter(
+    'http_requests_total',
+    'Total number of HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+
+REQUEST_LATENCY = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request latency in seconds',
+    ['method', 'endpoint']
+)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -28,6 +44,32 @@ async def lifespan(app: FastAPI):
     # Add any cleanup code here if needed
 
 app = FastAPI(lifespan=lifespan)
+
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    
+    if request.url.path != '/metrics':
+        duration = time.time() - start_time
+        REQUEST_COUNT.labels(
+            method=request.method,
+            endpoint=request.url.path,
+            status=response.status_code
+        ).inc()
+        REQUEST_LATENCY.labels(
+            method=request.method,
+            endpoint=request.url.path
+        ).observe(duration)
+    
+    return response
+
+@app.get('/metrics')
+def metrics():
+    return Response(
+        generate_latest(),
+        media_type=CONTENT_TYPE_LATEST
+    )
 
 async def process_validator_request(
     request_id: str,
