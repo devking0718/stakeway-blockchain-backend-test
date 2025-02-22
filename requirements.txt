@@ -1,8 +1,19 @@
+# Ethereum/Web3 dependencies
+web3==6.15.1
+eth-account==0.11.0
+eth-typing==3.5.2
+eth-utils==2.3.1
+
+# Environment variables
+python-dotenv==1.0.1
+
+# General utilities
+requests==2.31.0
+
 fastapi==0.104.1
 uvicorn==0.24.0
 sqlalchemy==2.0.23
 pydantic==2.5.2
 pytest==7.4.3
 httpx==0.25.2
-python-dotenv==1.0.0
 prometheus-client==0.17.1 

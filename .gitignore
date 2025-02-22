@@ -38,4 +38,8 @@ wheels/
 *.log
 
 # Environment variables
+.env
+.env.*
+
+# Environment variables
 .env 
