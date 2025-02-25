@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: backend-api
+  name: stakeway-test
 spec:
   type: LoadBalancer
   ports:
   - port: 80
     targetPort: 8000
   selector:
-    app: backend-api 
+    app: stakeway-test 

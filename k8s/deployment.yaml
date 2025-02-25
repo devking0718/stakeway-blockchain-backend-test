@@ -1,31 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-api
+  name: stakeway-test
   labels:
-    app: backend-api
+    app: stakeway-test
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: backend-api
+      app: stakeway-test
   template:
     metadata:
       labels:
-        app: backend-api
+        app: stakeway-test
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/path: "/metrics"
         prometheus.io/port: "8000"
     spec:
       containers:
-      - name: backend-api
-        image: your-registry/backend-api:latest
+      - name: stakeway-test
+        image: devking0718/stakeway-test:latest
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
-            name: backend-config
+            name: stakeway-test-config
         livenessProbe:
           httpGet:
             path: /health
